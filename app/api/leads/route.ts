@@ -1,7 +1,8 @@
+import { Resend } from "resend";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { supabase } from "@/lib/supabase";
-
+const resend = new Resend(process.envre_EuDnpn2W_7QWZ5x7YEHQWM6gAdAFQHq2A.);
 const leadSchema = z.object({
   first_name: z.string().min(1),
   last_name: z.string().min(1),
@@ -75,9 +76,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "DB error" }, { status: 500 });
     }
 
-    await supabase.from("events").insert({
-      lead_id: lead.id,
-      type: "form_submitted",
+  if (process.env.re_EuDnpn2W_7QWZ5x7YEHQWM6gAdAFQHq2A && process.env.LEAD_ALERT_EMAIL) {
+  try {
+    const emailResult = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: process.env.LEAD_ALERT_EMAIL,
+      subject: `New Advisor Lead: ${parsed.first_name} ${parsed.last_name}`,
+      text: `
+New advisor lead submitted
+
+Name: ${parsed.first_name} ${parsed.last_name}
+Email: ${parsed.email}
+Phone: ${parsed.phone || "N/A"}
+State: ${parsed.state}
+Production: ${parsed.production}
+Current IMO: ${parsed.current_imo || "N/A"}
+
+Notes:
+${parsed.notes || "N/A"}
+
+Score: ${score}
+      `.trim(),
+    });
+
+    console.log("Resend result:", emailResult);
+  } catch (emailError) {
+    console.error("Email send failed:", emailError);
+  }
+} else {
+  console.log("Missing email env vars");
+}
       metadata: { score },
     });
 

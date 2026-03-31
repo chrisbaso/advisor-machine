@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const { data: leads, error } = await supabase
     .from("leads")
@@ -7,7 +9,7 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    return <div className="p-8">Error loading leads.</div>;
+    return <div className="p-8">Error loading leads: {error.message}</div>;
   }
 
   return (
@@ -29,13 +31,17 @@ export default async function DashboardPage() {
           <tbody>
             {leads?.map((lead) => (
               <tr key={lead.id} className="border-t">
-                <td className="p-3">{lead.first_name} {lead.last_name}</td>
+                <td className="p-3">
+                  {lead.first_name} {lead.last_name}
+                </td>
                 <td className="p-3">{lead.email}</td>
                 <td className="p-3">{lead.state}</td>
                 <td className="p-3">{lead.annual_fia_production}</td>
                 <td className="p-3 capitalize">{lead.score}</td>
                 <td className="p-3 capitalize">{lead.status}</td>
-                <td className="p-3">{new Date(lead.created_at).toLocaleString()}</td>
+                <td className="p-3">
+                  {new Date(lead.created_at).toLocaleString()}
+                </td>
               </tr>
             ))}
           </tbody>
